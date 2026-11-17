@@ -37,7 +37,20 @@ void destroy(Channel *cha){
 	return;	
 }
 
-
+pid_t spawn(char *args[]){
+	pid_t pid; 
+	pid = fork (); 
+	if (pid == -1){
+	    perror("Σφάλμα στη fork");
+        exit(EXIT_FAILURE);	
+	}
+	if (pid == 0) { // I am the child 
+		execvp (args[0], args); 
+        perror("Σφάλμα στη execvp");
+        exit(EXIT_FAILURE);
+	}
+	return pid; 	
+}
 
 
 int main (int argc, char **argv) { 
@@ -71,7 +84,7 @@ int main (int argc, char **argv) {
 		fprintf(stderr, "Λάθος τιμές στην παράμετρο p. Δεκτές τίμες από 0.0-1.0\n");
 		exit(EXIT_FAILURE);
 	}
-	if ( p > 1.0 || p < 0.0){
+	if ( !(p >= 0.0 && p <= 1.0)){
 		fprintf(stderr, "Λάθος τιμές στην παράμετρο p. Δεκτές τίμες από 0.0-1.0\n");
 		exit(EXIT_FAILURE);
 	}
@@ -123,33 +136,27 @@ int main (int argc, char **argv) {
 	init(&shared_msg->ENC2_to_P2);
  
 
- 
-	pid_t pid; 
-	int status, ret; 
-	char *exec_args[] = {"./enc", "1", NULL};
-	printf ("Parent: Hello\n"); 
-	pid = fork (); 
-	if (pid == -1){
-	    perror("Σφάλμα στη fork");
-        exit(EXIT_FAILURE);	
-	}
-	if (pid == 0) { // I am the child 
-		execvp ("./child", exec_args); 
-        perror("Σφάλμα στη execvp");
-        exit(EXIT_FAILURE);
-	} 
-	// I am the parent 
 
-	printf ("Parent: Waiting for Child to complete.\n"); 
-	sleep(3);
-	Message m;
-	m.type = MSG_DATA;
-	strncpy(m.text, "test", sizeof(m.text));
-    m.text[sizeof(m.text) - 1] = '\0';
-	chan_send(&shared_msg->P1_to_ENC1, &m);
-	if ((ret = waitpid (pid, &status, 0)) == -1) {
-		printf ("parent:error\n"); 
-	}
+
+	// Ορίσματα για κάθε παιδί
+	char *enc1_args[] = {"./enc", "1", n_str, NULL};
+	char *enc2_args[] = {"./enc", "2", n_str, NULL};
+	char *chan_args[] = {"./chan", p_str, NULL};
+
+	// Δημιουργία παιδιών
+	pid_t pid_enc1 = spawn(enc1_args);
+	pid_t pid_enc2 = spawn(enc2_args);
+	pid_t pid_chan = spawn(chan_args);
+
+	printf("start: ξεκίνησαν ENC1, ENC2, CHAN\n");
+
+	// Αναμονή και των τριών
+	waitpid(pid_enc1, NULL, 0);
+	waitpid(pid_enc2, NULL, 0);
+	waitpid(pid_chan, NULL, 0);
+
+	
+
 
 
 	destroy(&shared_msg->P1_to_ENC1);
@@ -171,8 +178,4 @@ int main (int argc, char **argv) {
         perror("Σφαλμα στην unlink");
         exit(EXIT_FAILURE);         
     }
-    
-	if (ret == pid){ 
-		printf ("Parent: Child process waited for.\n"); 
-	}
 }
