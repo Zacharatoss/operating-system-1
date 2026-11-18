@@ -5,7 +5,7 @@ LDLIBS  = -pthread -lrt
 
 # Όλα τα εκτελέσιμα που θέλουμε να φτιάχνονται.
 # Όταν φτιάξεις enc.c / chan.c / proc.c, πρόσθεσέ τα εδώ (και σβήσε το child).
-PROGS   = start chan
+PROGS   = start chan enc proc
 
 # Κοινά αρχεία που χρειάζονται ΟΛΑ τα προγράμματα
 COMMON_SRC = ipc.c

@@ -157,8 +157,6 @@ int main (int argc, char **argv) {
 
 	
 
-
-
 	destroy(&shared_msg->P1_to_ENC1);
 	destroy(&shared_msg->P2_to_ENC2);
 	destroy(&shared_msg->ENC1_to_CHAN);

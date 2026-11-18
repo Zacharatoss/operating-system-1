@@ -30,6 +30,13 @@ typedef struct {
     Channel ENC2_to_P2;
 } SharedMemory;
 
+typedef struct {
+    Channel *in;
+    Channel *out;
+} TwoChannels;
+
+
+
 
 
 void chan_receive(Channel *ch, Message *m);
